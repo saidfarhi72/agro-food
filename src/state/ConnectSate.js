@@ -32,18 +32,25 @@ export const SignerProvider = ({ children }) => {
   const connectWallet = async () => {
     setLoading(true);
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
-      setSigner(signer);
-      setAddress(address);
-      connectContract()
-    } catch (e) {
-      console.log(e);
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        setSigner(signer);
+        setAddress(address);
+        console.log("connected", address);
+      } else {
+        throw new Error('Please install MetaMask or use an Ethereum-enabled browser.');
+      }
+    } catch (error) {
+      console.error('Error connecting to wallet:', error);
+      // Handle the error, display a message, etc.
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    console.log("connected", address)
   };
+  
   const connectContract = async () => {
     const Address = "0xC478992D823B6c3d51F686cAd24514b48cc3541c";
     const ABI = [
